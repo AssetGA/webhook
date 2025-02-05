@@ -1,14 +1,76 @@
-import express from "express";
-import axios from "axios";
+/**
+ * Copyright 2016-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+require("dotenv").config();
+
+const bodyParser = require("body-parser");
+const express = require("express");
+const crypto = require("crypto");
 
 const app = express();
-const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
-const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID";
+app.set("port", process.env.PORT || 5000);
+app.listen(app.get("port"));
 
-app.use(express.json());
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const token = process.env.VERIFY_TOKEN || "token"; // Set your verify token
 
-// Webhook для Instagram
-app.post("/webhook", async (req, res) => {
+app.use(bodyParser.json({ verify: verifySignature }));
+
+// ✅ Function to verify X-Hub-Signature (instead of express-x-hub)
+function verifySignature(req, res, buf) {
+  const signature = req.headers["x-hub-signature-256"];
+  if (!signature) {
+    console.log("❌ No signature found");
+    return;
+  }
+
+  const expectedSignature =
+    "sha256=" +
+    crypto.createHmac("sha256", APP_SECRET).update(buf).digest("hex");
+
+  if (signature !== expectedSignature) {
+    console.log("❌ Invalid signature!");
+    throw new Error("Invalid signature");
+  } else {
+    console.log("✅ Valid signature!");
+  }
+}
+
+const received_updates = [];
+
+app.get("/", function (req, res) {
+  console.log(req);
+  res.send("<pre>" + JSON.stringify(received_updates, null, 2) + "</pre>");
+});
+
+app.get(["/facebook", "/instagram", "/threads"], function (req, res) {
+  if (
+    req.query["hub.mode"] == "subscribe" &&
+    req.query["hub.verify_token"] == token
+  ) {
+    res.send(req.query["hub.challenge"]);
+  } else {
+    res.sendStatus(400);
+  }
+});
+
+app.post("/facebook", function (req, res) {
+  if (!req.headers["x-hub-signature-256"]) {
+    console.log("❌ Missing X-Hub-Signature-256 header");
+    return res.sendStatus(401);
+  }
+
+  // Process the Facebook updates here
+  received_updates.unshift(req.body);
+  res.sendStatus(200);
+});
+
+app.post("/instagram", async function (req, res) {
   if (req.body.entry) {
     const message =
       req.body.entry[0].messaging[0]?.message?.text ||
@@ -27,4 +89,12 @@ app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.listen(3000, () => console.log("Server is running"));
+app.post("/threads", function (req, res) {
+  console.log("Threads request body:");
+  console.log(req.body);
+  // Process the Threads updates here
+  received_updates.unshift(req.body);
+  res.sendStatus(200);
+});
+
+app.listen();
