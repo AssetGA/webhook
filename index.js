@@ -32,7 +32,7 @@ function verifySignature(req, res, buf) {
   const expectedSignature =
     "sha256=" +
     crypto.createHmac("sha256", APP_SECRET).update(buf).digest("hex");
-
+  console.log("111", expectedSignature);
   if (signature !== expectedSignature) {
     console.log("❌ Invalid signature!");
     throw new Error("Invalid signature");
@@ -43,23 +43,26 @@ function verifySignature(req, res, buf) {
 
 const received_updates = [];
 
-app.get("/", function (req, res) {
+app.get("/webhooks", function (req, res) {
   console.log(req);
   res.send("<pre>" + JSON.stringify(received_updates, null, 2) + "</pre>");
 });
 
-app.get(["/facebook", "/instagram", "/threads"], function (req, res) {
-  if (
-    req.query["hub.mode"] == "subscribe" &&
-    req.query["hub.verify_token"] == token
-  ) {
-    res.send(req.query["hub.challenge"]);
-  } else {
-    res.sendStatus(400);
+app.get(
+  ["/webhooks/facebook", "/webhooks/instagram", "/webhooks/threads"],
+  function (req, res) {
+    if (
+      req.query["hub.mode"] == "subscribe" &&
+      req.query["hub.verify_token"] == token
+    ) {
+      res.send(req.query["hub.challenge"]);
+    } else {
+      res.sendStatus(400);
+    }
   }
-});
+);
 
-app.post("/facebook", function (req, res) {
+app.post("/webhooks/facebook", function (req, res) {
   if (!req.headers["x-hub-signature-256"]) {
     console.log("❌ Missing X-Hub-Signature-256 header");
     return res.sendStatus(401);
@@ -70,7 +73,7 @@ app.post("/facebook", function (req, res) {
   res.sendStatus(200);
 });
 
-app.post("/instagram", async function (req, res) {
+app.post("/webhooks/instagram", async function (req, res) {
   if (req.body.entry) {
     const message =
       req.body.entry[0].messaging[0]?.message?.text ||
@@ -89,7 +92,7 @@ app.post("/instagram", async function (req, res) {
   res.sendStatus(200);
 });
 
-app.post("/threads", function (req, res) {
+app.post("/webhooks/threads", function (req, res) {
   console.log("Threads request body:");
   console.log(req.body);
   // Process the Threads updates here
@@ -98,3 +101,5 @@ app.post("/threads", function (req, res) {
 });
 
 app.listen();
+
+// https://webhook-seven-chi.vercel.app/webhooks/instagram?hub.mode=subscribe&hub.challenge=1158201444&hub.verify_token=almale198WrNT$-RTHY
