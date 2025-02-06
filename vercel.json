@@ -7,9 +7,6 @@
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
+    { "src": "/webhooks/instagram", "dest": "/api/webhooks/instagram.js" }
   ]
 }

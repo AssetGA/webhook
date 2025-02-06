@@ -47,7 +47,7 @@ app.get("/webhooks", function (req, res) {
   console.log(req);
   res.send("<pre>" + JSON.stringify(received_updates, null, 2) + "</pre>");
 });
-
+// https://webhook-seven-chi.vercel.app/webhooks/instagram?hub.mode=subscribe&hub.challenge=1158201444&hub.verify_token=almale198WrNT$-RTHY
 app.get(
   ["/webhooks/facebook", "/webhooks/instagram", "/webhooks/threads"],
   function (req, res) {
@@ -101,5 +101,3 @@ app.post("/webhooks/threads", function (req, res) {
 });
 
 app.listen();
-
-// https://webhook-seven-chi.vercel.app/webhooks/instagram?hub.mode=subscribe&hub.challenge=1158201444&hub.verify_token=almale198WrNT$-RTHY
