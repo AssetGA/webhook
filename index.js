@@ -52,8 +52,8 @@ app.get(
   ["/webhooks/facebook", "/webhooks/instagram", "/webhooks/threads"],
   function (req, res) {
     if (
-      req.query["hub.mode"] == "subscribe" &&
-      req.query["hub.verify_token"] == token
+      req.query["hub.mode"] === "subscribe" &&
+      req.query["hub.verify_token"] === token
     ) {
       res.send(req.query["hub.challenge"]);
     } else {
@@ -78,6 +78,21 @@ app.post("/webhooks/instagram", async function (req, res) {
     const message =
       req.body.entry[0].messaging[0]?.message?.text ||
       "Новое сообщение в Instagram!";
+
+    req.body.entry.forEach((entry) => {
+      entry.changes.forEach(async (change) => {
+        if (change.field === "comments") {
+          console.log("📝 Новый комментарий:", change.value);
+          await axios.post(
+            `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+            {
+              chat_id: TELEGRAM_CHAT_ID,
+              text: `📩 Новое сообщение в Instagram: ${change.value}`,
+            }
+          );
+        }
+      });
+    });
 
     // Отправка в Telegram
     await axios.post(
