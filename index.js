@@ -10,6 +10,7 @@ require("dotenv").config();
 const bodyParser = require("body-parser");
 const express = require("express");
 const crypto = require("crypto");
+const { default: axios } = require("axios");
 
 const app = express();
 app.set("port", process.env.PORT || 5000);
