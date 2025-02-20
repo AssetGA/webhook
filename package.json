@@ -4,8 +4,8 @@
   "description": "webhook for instagram",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "start": "cross-env NODE_ENV=production node index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,9 +13,13 @@
   "dependencies": {
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
+    "config": "^3.3.12",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-x-hub": "^1.0.4",
     "nodemon": "^3.1.9"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

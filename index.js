@@ -9,8 +9,8 @@ require("dotenv").config();
 
 const bodyParser = require("body-parser");
 const express = require("express");
-const crypto = require("crypto");
 const { default: axios } = require("axios");
+const expressXHub = require("express-x-hub");
 
 const app = express();
 app.set("port", process.env.PORT || 5000);
@@ -18,32 +18,11 @@ app.listen(app.get("port"));
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+app.use(expressXHub({ algorithm: "sha1", secret: process.env.APP_SECRET }));
+app.use(bodyParser.json());
+
 const token = process.env.VERIFY_TOKEN || "token"; // Set your verify token
-
-app.use(bodyParser.json({ verify: verifySignature }));
-
-// ✅ Function to verify X-Hub-Signature (instead of express-x-hub)
-function verifySignature(req, res, buf) {
-  const signature = req.headers["x-hub-signature-256"];
-  if (!signature) {
-    console.log("❌ No signature found");
-    return;
-  }
-
-  const expectedSignature =
-    "sha256=" +
-    crypto
-      .createHmac("sha256", process.env.APP_SECRET)
-      .update(buf)
-      .digest("hex");
-  console.log("111", expectedSignature);
-  if (signature !== expectedSignature) {
-    console.log("❌ Invalid signature!");
-    throw new Error("Invalid signature");
-  } else {
-    console.log("✅ Valid signature!");
-  }
-}
 
 const received_updates = [];
 
