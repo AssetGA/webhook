@@ -6,7 +6,5 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    { "src": "/webhooks/instagram", "dest": "/api/webhooks/instagram.js" }
-  ]
+  "routes": [{ "src": "/webhooks", "dest": "/api/webhooks/instagram.js" }]
 }

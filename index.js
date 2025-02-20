@@ -32,7 +32,10 @@ function verifySignature(req, res, buf) {
 
   const expectedSignature =
     "sha256=" +
-    crypto.createHmac("sha256", APP_SECRET).update(buf).digest("hex");
+    crypto
+      .createHmac("sha256", process.env.APP_SECRET)
+      .update(buf)
+      .digest("hex");
   console.log("111", expectedSignature);
   if (signature !== expectedSignature) {
     console.log("❌ Invalid signature!");
